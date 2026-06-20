@@ -1,0 +1,35 @@
+:root {
+    --mfb-blue: #1B365D;
+    --mfb-gold: #C5A059;
+}
+
+body {
+    background-color: #F9FAFB;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+header {
+    background-color: white;
+    border-bottom: 3px solid var(--mfb-gold);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.btn-primary {
+    background-color: var(--mfb-blue);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-secondary {
+    border: 2px solid var(--mfb-gold);
+    color: var(--mfb-gold);
+    padding: 10px 22px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
