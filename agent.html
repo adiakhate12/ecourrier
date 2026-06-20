@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-Courrier - Tableau de Bord DGB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 min-h-screen">
+
+    <header class="bg-[#1B365D] text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🏛️</span>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide">Espace de Gestion des Dossiers</h1>
+                    <p class="text-xs text-gray-300">Ministère des Finances et du Budget — DGB Sénégal</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold">{{ session['nom_complet'] }}</p>
+                    <p class="text-[10px] text-amber-400 font-mono">{{ session['role'] }}</p>
+                </div>
+                <a href="/logout" class="bg-red-600/20 hover:bg-red-600/40 text-red-200 text-xs px-3 py-1.5 rounded transition border border-red-500/30">Déconnexion</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+        {% if session['role'] == 'Solde' %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-emerald-100">
+            <div class="flex items-center justify-between mb-6">
+                <p class="text-sm text-gray-600">Interface Administrateur : Gestion des accès des agents.</p>
+                <a href="/register" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition flex items-center">
+                    <span class="mr-2">➕</span> Créer un nouvel Agent
+                </a>
+            </div>
+            
+            <h3 class="font-bold text-[#1B365D] mb-4">👥 Liste des Agents Actifs</h3>
+            <div class="overflow-x-auto border rounded-lg">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3">Matricule</th>
+                            <th class="px-4 py-3">Nom Complet</th>
+                            <th class="px-4 py-3">Profil</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for a in agents %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono text-gray-700">{{ a.matricule }}</td>
+                            <td class="px-4 py-3 font-semibold">{{ a.nom_complet }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded-full text-[10px] font-bold 
+                                {% if a.role == 'Solde' %} bg-purple-100 text-purple-700 
+                                {% elif a.role == 'Courrier' %} bg-amber-100 text-amber-700 
+                                {% else %} bg-teal-100 text-teal-700 {% endif %}">
+                                {{ a.role }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a href="/agent/courrier" class="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-between group">
+                <div>
+                    <h3 class="font-bold text-lg">📦 Enregistrer un dépôt PHYSIQUE</h3>
+                    <p class="text-xs text-amber-100">Guichet Secrétariat</p>
+                </div>
+                <span class="text-2xl">➡️</span>
+            </a>
+            <a href="/agent/callcenter" class="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-between group">
+                <div>
+                    <h3 class="font-bold text-lg">🎧 Saisie CALL CENTER / MAIL</h3>
+                    <p class="text-xs text-teal-100">Traitement des requêtes</p>
+                </div>
+                <span class="text-2xl">➡️</span>
+            </a>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-4 justify-between">
+            <input type="text" id="globalSearch" placeholder="Rechercher par Ticket, Matricule, Objet..." class="w-full md:w-1/3 px-4 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#1B365D]">
+            <div class="flex space-x-2">
+                <button onclick="filterCanal('Tous')" class="bg-[#1B365D] text-white text-xs px-3 py-1.5 rounded-full font-medium">Tous</button>
+                <button onclick="filterCanal('En ligne')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-full font-medium">💻 En ligne</button>
+                <button onclick="filterCanal('Physique')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-full font-medium">📦 Physique</button>
+                <button onclick="filterCanal('Mail')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-full font-medium">📧 Mail</button>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 font-bold text-[#1B365D]">File d'attente des flux de courriers (DGB)</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left" id="dossiersTable">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-200">
+                            <th class="px-6 py-3">Ticket</th>
+                            <th class="px-6 py-3">Usager</th>
+                            <th class="px-6 py-3">Objet</th>
+                            <th class="px-6 py-3">Pièce</th>
+                            <th class="px-6 py-3">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm">
+                        {% for d in dossiers %}
+                        <tr class="hover:bg-gray-50 dossier-row" data-canal="{{ d.type_depot }}">
+                            <td class="px-6 py-4 font-mono font-bold text-blue-700 text-xs">{{ d.num_dos }}</td>
+                            <td class="px-6 py-4 text-xs font-semibold">Mle: {{ d.matricule_usager }}</td>
+                            <td class="px-6 py-4 text-xs">{{ d.nom_dos }}</td>
+                            <td class="px-6 py-4"><a href="/{{ d.chemin_doc }}" target="_blank" class="text-[#1B365D] underline">Voir</a></td>
+                            <td class="px-6 py-4">
+                                <select onchange="updateStatut('{{ d.id_dos }}', this.value)" class="text-[10px] font-bold p-1 rounded border">
+                                    <option value="1" {% if d.id_statut_actuel == 1 %}selected{% endif %}>⏳ En attente</option>
+                                    <option value="2" {% if d.id_statut_actuel == 2 %}selected{% endif %}>🔄 En cours</option>
+                                    <option value="3" {% if d.id_statut_actuel == 3 %}selected{% endif %}>✅ Traité</option>
+                                    <option value="4" {% if d.id_statut_actuel == 4 %}selected{% endif %}>❌ Rejeté</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('globalSearch').addEventListener('input', function(e) {
+            const t = e.target.value.toLowerCase();
+            document.querySelectorAll('.dossier-row').forEach(r => r.style.display = r.innerText.toLowerCase().includes(t) ? '' : 'none');
+        });
+
+        function filterCanal(c) {
+            document.querySelectorAll('.dossier-row').forEach(r => r.style.display = (c === 'Tous' || r.getAttribute('data-canal') === c) ? '' : 'none');
+        }
+
+        async function updateStatut(idDos, idStatut) {
+            const response = await fetch('/api/agent/dossier/statut', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_dos: idDos, id_statut: idStatut })
+            });
+            if (response.ok) window.location.reload();
+            else alert("Erreur lors de la mise à jour.");
+        }
+    </script>
+</body>
+</html>

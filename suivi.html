@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de Dossier - e-Courrier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .navbar-dgb { background-color: #1B365D; }
+        .timeline-step { position: relative; text-align: center; }
+        .step-icon { width: 40px; height: 40px; border-radius: 50%; background-color: #ced4da; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .step-active .step-icon { background-color: #1B365D; }
+        .step-success .step-icon { background-color: #198754; }
+        .step-danger .step-icon { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark navbar-dgb shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">🏛️ eCOURRIER - Suivi en Ligne</span>
+            <a href="/" class="btn btn-outline-light btn-sm">Accueil</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mb-4">
+                <h3 class="fw-bold text-secondary">Statut de votre demande</h3>
+                <p class="text-muted">Numéro : <span class="badge bg-primary fs-6">{{ num_dos }}</span></p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <h5 class="fw-bold mb-3">{{ dossier.nom_dos }}</h5>
+                    <p class="text-muted mb-4">{{ dossier.description }}</p>
+
+                    <div class="row pt-2">
+                        <div class="col timeline-step {% if dossier.id_statut_actuel >= 1 %}step-active{% endif %}">
+                            <div class="step-icon">1</div>
+                            <p class="small mt-2 mb-0 fw-bold">Déposé</p>
+                        </div>
+                        <div class="col timeline-step {% if dossier.id_statut_actuel >= 2 %}step-active{% endif %}">
+                            <div class="step-icon">2</div>
+                            <p class="small mt-2 mb-0 fw-bold">En cours</p>
+                        </div>
+                        <div class="col timeline-step {% if dossier.id_statut_actuel == 3 %}step-success{% elif dossier.id_statut_actuel == 4 %}step-danger{% endif %}">
+                            <div class="step-icon">3</div>
+                            <p class="small mt-2 mb-0 fw-bold">
+                                {% if dossier.id_statut_actuel == 4 %}Rejeté{% else %}Traité{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-muted small">Date de consultation : {{ date_actuelle }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
