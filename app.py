@@ -101,6 +101,17 @@ def update_statut():
     conn.commit()
     conn.close()
     return jsonify({"message": "Statut mis à jour"})
+@app.route("/agent/courrier")
+def agent_courrier():
+    if not session.get("logged_in") or session.get("role") != "Courrier":
+        return redirect("/login")
+    return render_template("courrier.html") # Assure-toi d'avoir courrier.html
+
+@app.route("/agent/callcenter")
+def agent_callcenter():
+    if not session.get("logged_in") or session.get("role") != "CallCenter":
+        return redirect("/login")
+    return render_template("callcenter.html") # Assure-toi d'avoir callcenter.html
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
