@@ -28,7 +28,7 @@ def init_db():
         ("COU/002", "Courrier@2026", "Agent Courrier Physique", "Courrier"),
         ("CAL/003", "Call@2026", "Agent Call Center", "CallCenter"),
         # Ajout de ton matricule personnel
-        ("102224/Z", "ton_mot_de_passe", "Ton Nom Complet", "Solde"),
+        ("102224/Z", "DGB_2026_Secure", "Astou Diakhaté", "Solde"),
     ]
 
     cursor.executemany("""
