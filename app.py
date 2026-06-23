@@ -2,7 +2,7 @@ import logging
 import os
 import sqlite3
 from flask import Flask, jsonify, redirect, render_template, request, session
-import init_db 
+import init_db
 
 # Configuration
 logging.basicConfig(level=logging.INFO)
@@ -10,14 +10,11 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dgb_mfb_secure_session_key_2026")
 DB_NAME = "ecourrier.db"
 
-# --- AJOUT CRUCIAL : La fonction manquante ---
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     return conn
-# ---------------------------------------------
 
-# Initialisation automatique de la base au démarrage
 def initialize_app():
     if not os.path.exists(DB_NAME):
         logging.info("Base de données non trouvée, initialisation...")
@@ -37,7 +34,7 @@ def login():
     if request.method == "POST":
         matricule = request.form.get("matricule")
         password = request.form.get("password")
-        conn = get_db_connection() # Maintenant elle est trouvée !
+        conn = get_db_connection()
         user = conn.execute("SELECT * FROM Utilisateur WHERE matricule = ? AND mot_de_passe = ?", (matricule, password)).fetchone()
         conn.close()
         if user:
@@ -66,34 +63,44 @@ def espace_agent():
     conn.close()
     return render_template("agent.html", dossiers=dossiers, agents=agents)
 
-# ... (tes autres routes restent identiques)
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    # Protection : seuls les "Solde" peuvent créer des agents
     if not session.get("logged_in") or session.get("role") != "Solde":
         return "Accès refusé", 403
-        
     if request.method == "POST":
         matricule = request.form.get("matricule")
         password = request.form.get("password")
         nom = request.form.get("nom_complet")
         role = request.form.get("role")
-        
         conn = get_db_connection()
         try:
             conn.execute("INSERT INTO Utilisateur (matricule, mot_de_passe, nom_complet, role) VALUES (?, ?, ?, ?)",
                          (matricule, password, nom, role))
             conn.commit()
-            conn.close()
             return redirect("/agent")
         except sqlite3.IntegrityError:
-            conn.close()
             return "Erreur : Ce matricule existe déjà.", 400
-            
+        finally:
+            conn.close()
     return render_template("register.html")
+
 @app.route("/depot")
 def depot():
     return render_template("depot.html")
+
+@app.route("/api/ecourrier/dossier/deposer", methods=["POST"])
+def deposer_dossier():
+    return jsonify({"message": "Dossier enregistré"}), 201
+
+@app.route("/api/agent/dossier/statut", methods=["POST"])
+def update_statut():
+    if not session.get("logged_in"): return jsonify({"error": "Non autorisé"}), 403
+    data = request.json
+    conn = get_db_connection()
+    conn.execute("UPDATE Dossier SET id_statut_actuel = ? WHERE id_dos = ?", (data["id_statut"], data["id_dos"]))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Statut mis à jour"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
