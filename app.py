@@ -67,6 +67,30 @@ def espace_agent():
     return render_template("agent.html", dossiers=dossiers, agents=agents)
 
 # ... (tes autres routes restent identiques)
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    # Protection : seuls les "Solde" peuvent créer des agents
+    if not session.get("logged_in") or session.get("role") != "Solde":
+        return "Accès refusé", 403
+        
+    if request.method == "POST":
+        matricule = request.form.get("matricule")
+        password = request.form.get("password")
+        nom = request.form.get("nom_complet")
+        role = request.form.get("role")
+        
+        conn = get_db_connection()
+        try:
+            conn.execute("INSERT INTO Utilisateur (matricule, mot_de_passe, nom_complet, role) VALUES (?, ?, ?, ?)",
+                         (matricule, password, nom, role))
+            conn.commit()
+            conn.close()
+            return redirect("/agent")
+        except sqlite3.IntegrityError:
+            conn.close()
+            return "Erreur : Ce matricule existe déjà.", 400
+            
+    return render_template("register.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
