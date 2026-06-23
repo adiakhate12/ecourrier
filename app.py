@@ -91,6 +91,9 @@ def register():
             return "Erreur : Ce matricule existe déjà.", 400
             
     return render_template("register.html")
+@app.route("/depot")
+def depot():
+    return render_template("depot.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
