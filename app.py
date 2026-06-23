@@ -1,31 +1,27 @@
 import logging
 import os
 import sqlite3
-import uuid
-from datetime import datetime
 from flask import Flask, jsonify, redirect, render_template, request, session
-import qrcode
-from werkzeug.utils import secure_filename
+import init_db  # Importe ton fichier init_db.py
 
 # Configuration
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
-# Utilisation de la variable d'environnement pour la sécurité sur Render
 app.secret_key = os.environ.get("SECRET_KEY", "dgb_mfb_secure_session_key_2026")
 DB_NAME = "ecourrier.db"
 
-UPLOAD_FOLDER = os.path.join("static", "uploads")
-QR_CODE_DIR = os.path.join("static", "qrcodes")
-ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
+# Initialisation automatique de la base au démarrage
+def initialize_app():
+    if not os.path.exists(DB_NAME):
+        logging.info("Base de données non trouvée, initialisation...")
+        init_db.init_db()
+    else:
+        logging.info("Base de données déjà existante.")
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(QR_CODE_DIR, exist_ok=True)
+# Appel de l'initialisation
+initialize_app()
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
-
+# ... reste de ton code (UPLOAD_FOLDER, routes, etc.)
 # --- ROUTES DE NAVIGATION ---
 @app.route("/")
 def index():
