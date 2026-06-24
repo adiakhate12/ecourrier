@@ -291,5 +291,7 @@ def deposer_dossier():
 def suivi_dossier(ticket):
     return f"Statut pour {ticket} : En cours de traitement."
 
+# ... (garde tout le reste de ton code jusqu'à la fin de la fonction suivi_dossier)
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=False)
