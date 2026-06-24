@@ -144,8 +144,9 @@ def deposer_dossier():
 def suivi_dossier(ticket):
     return f"Statut pour {ticket} : En cours de traitement."
 
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=False)import logging
+    app.run(host='0.0.0.0', port=5000, debug=False)
 import uuid
 import datetime
 import qrcode
