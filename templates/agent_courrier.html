@@ -2,177 +2,57 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>e-Courrier - Espace Agent Courrier (Dépôt Physique)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <title>Suivi Courriers</title>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800 min-h-screen flex flex-col justify-between">
-
-    <header class="bg-[#1B365D] text-white shadow-md">
-        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl">📦</span>
-                <div>
-                    <h1 class="font-bold text-lg tracking-wide">Espace Agent Courrier</h1>
-                    <p class="text-xs text-amber-400">Guichet Unique — Enregistrement des Dépôts Physiques</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="text-sm bg-blue-800 px-3 py-1 rounded-full text-blue-200">Session Active 🔑</span>
-                <a href="/logout" class="text-sm text-gray-300 hover:text-white transition underline">Déconnexion</a>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-3xl mx-auto px-4 py-10 w-full flex-grow">
+<body class="p-10 bg-gray-50">
+    <div class="bg-white p-6 rounded-lg shadow border border-gray-200">
+        <h3 class="text-xl font-bold mb-4 text-[#1B365D]">Tableau de Suivi des Courriers</h3>
         
-        <div class="mb-6 flex justify-between items-center">
-            <a href="/agent" class="text-sm text-[#1B365D] hover:underline flex items-center space-x-1">
-                <span> Retour au Tableau de Bord Principal</span>
-            </a>
-        </div>
-
-        <div class="bg-white shadow-xl rounded-xl p-6 md:p-8 border border-gray-200">
-            <div class="border-b border-gray-100 pb-4 mb-6">
-                <h2 class="text-2xl font-bold text-[#1B365D]">Enregistrer un Dépôt Physique</h2>
-                <p class="text-sm text-gray-500 mt-1">Saisie manuelle des courriers et dossiers déposés physiquement au secrétariat de la DGB.</p>
-            </div>
-
-            <div id="notificationZone" class="hidden mb-6 p-4 rounded-lg text-sm font-medium"></div>
-
-            <form id="agentCourrierForm" enctype="multipart/form-data" class="space-y-6">
-                <input type="hidden" name="type_depot" value="Physique">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Matricule de l'usager <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="matricule_usager" required placeholder="Ex: 611234/A"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B365D] focus:border-transparent outline-none transition bg-amber-50/30">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Référence du dossier physique <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="reference_dossier" required placeholder="Ex: REF-2026-PHY-01"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B365D] focus:border-transparent outline-none transition bg-amber-50/30">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Nature / Objet du dépôt <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="nom_dos" required placeholder="Ex: Demande d'attestation de non-solde"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B365D] focus:border-transparent outline-none transition">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Analyse sommaire / Description des pièces fournies
-                    </label>
-                    <textarea name="description" rows="3" required placeholder="Ex: Contient la lettre d'accompagnement officielle ainsi que les derniers bulletins de salaire..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B365D] focus:border-transparent outline-none transition"></textarea>
-                </div>
-
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">
-                        Scanner du document physique déposé <span class="text-red-500">*</span>
-                    </label>
-                    <p class="text-xs text-gray-400 mb-3">L'agent doit impérativement numériser et joindre le courrier tamponné.</p>
-                    <input type="file" name="document" accept=".pdf,.png,.jpg,.jpeg" required
-                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#1B365D]/10 file:text-[#1B365D] hover:file:bg-[#1B365D]/20 cursor-pointer">
-                </div>
-
-                <button type="submit" id="btnSubmit"
-                    class="w-full bg-[#1B365D] hover:bg-[#162d4e] text-white font-semibold py-3 px-6 rounded-lg transition shadow-md flex justify-center items-center space-x-2">
-                    <span>Valider et Générer le Numéro de Ticket 📇</span>
-                </button>
-            </form>
-
-            <div id="receiptCard" class="hidden mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 text-center space-y-4">
-                <span class="text-4xl">📝</span>
-                <h3 class="text-xl font-bold text-blue-900">Dépôt Physique Enregistré !</h3>
-                <p class="text-sm text-blue-800">Un SMS automatique contenant le numéro de ticket a été transmis à l'usager.</p>
-                
-                <div class="bg-white p-4 rounded-lg inline-block shadow-sm border border-blue-100 space-y-2 text-left mx-auto max-w-sm w-full">
-                    <p class="text-sm"><strong> N° TICKET GÉNÉRÉ :</strong> <span id="recTicket" class="font-mono text-amber-600 font-bold text-lg"></span></p>
-                    <p class="text-sm"><strong> MATRICULE :</strong> <span id="recMatricule" class="font-medium"></span></p>
-                    <p class="text-sm"><strong> RÉFÉRENCE INTERNE :</strong> <span id="recReference" class="font-medium"></span></p>
-                    <p class="text-sm"><strong> CANAL DE DÉPÔT :</strong> <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-bold">PHYSIQUE</span></p>
-                </div>
-
-                <div class="pt-2 flex flex-col items-center">
-                    <p class="text-xs text-gray-500 font-medium mb-2">Imprimer ou coller ce QR Code sur le dossier physique :</p>
-                    <img id="recQrCode" src="" alt="QR Code" class="w-36 h-36 border border-gray-200 rounded-lg p-1 bg-white">
-                    <button onclick="window.print()" class="mt-4 text-xs bg-white text-gray-700 font-semibold py-1.5 px-3 border border-gray-300 rounded shadow-sm hover:bg-gray-50 transition">
-                         Imprimer l'étiquette de suivi
-                    </button>
-                </div>
-                
-                <div class="pt-2">
-                    <button onclick="window.location.reload()" class="text-sm text-[#1B365D] font-semibold hover:underline">
-                         Enregistrer un autre dossier physique
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="bg-gray-100 border-t border-gray-200 text-center py-4 text-xs text-gray-500">
-        &copy; 2026 Direction Générale du Budget (DGB) — Ministère des Finances et du Budget.
-    </footer>
-
-    <script>
-        const form = document.getElementById('agentCourrierForm');
-        const notif = document.getElementById('notificationZone');
-        const receiptCard = document.getElementById('receiptCard');
-        const btnSubmit = document.getElementById('btnSubmit');
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            notif.classList.add('hidden');
-            receiptCard.classList.add('hidden');
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = "Génération du ticket en cours... ";
-
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch('/api/ecourrier/dossier/deposer', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || "Échec lors de l'enregistrement en base.");
-                }
-
-                // Masquage du formulaire de saisie
-                form.classList.add('hidden');
-                
-                // Remplissage du ticket imprimable
-                document.getElementById('recTicket').innerText = result.numero_ticket;
-                document.getElementById('recMatricule').innerText = result.matricule;
-                document.getElementById('recReference').innerText = result.reference;
-                document.getElementById('recQrCode').src = '/' + result.qr_code_genere;
-                
-                receiptCard.classList.remove('hidden');
-
-            } catch (error) {
-                notif.innerText = error.message;
-                notif.className = "mb-6 p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200";
-                notif.classList.remove('hidden');
-                
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = "<span>Valider et Générer le Numéro de Ticket 📇</span>";
-            }
-        });
-    </script>
+        <table class="w-full border-collapse border border-gray-300">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border border-gray-300 p-3 text-left">Ticket</th>
+                    <th class="border border-gray-300 p-3 text-left">Expéditeur</th>
+                    <th class="border border-gray-300 p-3 text-left">Objet</th>
+                    <th class="border border-gray-300 p-3 text-left">Statut</th>
+                    <th class="border border-gray-300 p-3 text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in courriers %}
+                <tr class="hover:bg-gray-50">
+                    <td class="border border-gray-300 p-3 font-mono font-bold text-blue-800">{{ c.num_dos }}</td>
+                    <td class="border border-gray-300 p-3">{{ c.matricule_usager }}</td>
+                    <td class="border border-gray-300 p-3">{{ c.nom_dos }}</td>
+                    <td class="border border-gray-300 p-3">
+                        {% if c.id_statut_actuel == 1 %}
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-bold">En attente</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold">Traité</span>
+                        {% endif %}
+                    </td>
+                    <td class="border border-gray-300 p-3 text-center">
+                        {% if c.id_statut_actuel == 1 %}
+                        <form action="/update_status/{{ c.id_dos }}" method="POST">
+                            <button type="submit" class="bg-[#1B365D] hover:bg-blue-900 text-white px-3 py-1 rounded text-sm transition">
+                                Valider
+                            </button>
+                        </form>
+                        {% else %}
+                            <span class="text-gray-400 text-sm italic">Terminé</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="p-6 text-center text-gray-500">
+                        Aucun dossier en cours.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

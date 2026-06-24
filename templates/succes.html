@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dépôt réussi</title>
+</head>
+<body class="bg-gray-100 p-10">
+    <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md text-center">
+        <h2 class="text-2xl font-bold text-green-600">Dépôt réussi !</h2>
+        <p class="mt-4">Numéro de ticket : <strong>{{ ticket }}</strong></p>
+        
+        <img src="{{ url_for('static', filename='qrcodes/' + qr_image) }}" 
+             class="mx-auto my-4 border p-2" 
+             alt="QR Code">
+        
+        <a href="/agent/courrier" class="block w-full bg-[#1B365D] text-white py-2 rounded font-bold mt-4">
+            Retour au suivi
+        </a>
+    </div>
+</body>
+</html>

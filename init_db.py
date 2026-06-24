@@ -36,12 +36,12 @@ def init_db():
         VALUES (?, ?, ?, ?)
     """, comptes_test)
 
-    # 2. Table Dossier
+    # 2. Table Dossier (Mise à jour)
     cursor.execute("""
         CREATE TABLE Dossier (
             id_dos INTEGER PRIMARY KEY AUTOINCREMENT,
             num_dos TEXT UNIQUE NOT NULL,
-            reference_dossier TEXT NOT NULL,
+            reference_dossier TEXT,
             matricule_usager TEXT NOT NULL,
             nom_dos TEXT NOT NULL,
             description TEXT,
@@ -50,6 +50,7 @@ def init_db():
             id_statut_actuel INTEGER DEFAULT 1,
             qr_code_path TEXT,
             date_depot TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            id_user_depose INTEGER DEFAULT 1,  -- AJOUTE CETTE LIGNE
             FOREIGN KEY (matricule_usager) REFERENCES Utilisateur (matricule)
         )
     """)

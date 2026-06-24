@@ -1,30 +1,32 @@
 import logging
+import uuid
+import datetime
+import qrcode
+from werkzeug.utils import secure_filename
 import os
 import sqlite3
-from flask import Flask, jsonify, redirect, render_template, request, session
-import init_db
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
-# Configuration
-logging.basicConfig(level=logging.INFO)
+# Initialisation unique de l'application
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dgb_mfb_secure_session_key_2026")
+
+# Configuration des dossiers
 DB_NAME = "ecourrier.db"
+UPLOAD_FOLDER = 'static/uploads'
+QR_FOLDER = 'static/qrcodes'
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(QR_FOLDER, exist_ok=True)
+
+logging.basicConfig(level=logging.INFO)
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     return conn
 
-def initialize_app():
-    if not os.path.exists(DB_NAME):
-        logging.info("Base de données non trouvée, initialisation...")
-        init_db.init_db()
-    else:
-        logging.info("Base de données déjà existante.")
-
-initialize_app()
-
-# --- ROUTES ---
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -42,77 +44,86 @@ def login():
             session["matricule"] = user["matricule"]
             session["nom_complet"] = user["nom_complet"]
             session["role"] = user["role"]
-            if user["role"] == "Solde": return redirect("/agent")
-            if user["role"] == "Courrier": return redirect("/agent/courrier")
-            if user["role"] == "CallCenter": return redirect("/agent/callcenter")
+            if user["role"] == "Solde": return redirect(url_for('espace_agent_solde'))
+            if user["role"] == "Courrier": return redirect(url_for('agent_courrier'))
+            if user["role"] == "CallCenter": return redirect(url_for('agent_callcenter'))
             return redirect("/")
         return render_template("login.html", error="Identifiants incorrects.")
     return render_template("login.html")
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/login")
-
 @app.route("/agent")
-def espace_agent():
-    if not session.get("logged_in") or session.get("role") != "Solde": return redirect("/login")
+def espace_agent_solde():
+    if not session.get("logged_in") or session.get("role") != "Solde": return redirect(url_for('login'))
     conn = get_db_connection()
     dossiers = conn.execute("SELECT * FROM Dossier").fetchall()
     agents = conn.execute("SELECT * FROM Utilisateur WHERE role != 'Usager'").fetchall()
     conn.close()
     return render_template("agent.html", dossiers=dossiers, agents=agents)
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if not session.get("logged_in") or session.get("role") != "Solde":
-        return "Accès refusé", 403
-    if request.method == "POST":
-        matricule = request.form.get("matricule")
-        password = request.form.get("password")
-        nom = request.form.get("nom_complet")
-        role = request.form.get("role")
-        conn = get_db_connection()
-        try:
-            conn.execute("INSERT INTO Utilisateur (matricule, mot_de_passe, nom_complet, role) VALUES (?, ?, ?, ?)",
-                         (matricule, password, nom, role))
-            conn.commit()
-            return redirect("/agent")
-        except sqlite3.IntegrityError:
-            return "Erreur : Ce matricule existe déjà.", 400
-        finally:
-            conn.close()
-    return render_template("register.html")
-
-@app.route("/depot")
-def depot():
-    return render_template("depot.html")
-
-@app.route("/api/ecourrier/dossier/deposer", methods=["POST"])
-def deposer_dossier():
-    return jsonify({"message": "Dossier enregistré"}), 201
-
-@app.route("/api/agent/dossier/statut", methods=["POST"])
-def update_statut():
-    if not session.get("logged_in"): return jsonify({"error": "Non autorisé"}), 403
-    data = request.json
-    conn = get_db_connection()
-    conn.execute("UPDATE Dossier SET id_statut_actuel = ? WHERE id_dos = ?", (data["id_statut"], data["id_dos"]))
-    conn.commit()
-    conn.close()
-    return jsonify({"message": "Statut mis à jour"})
 @app.route("/agent/courrier")
 def agent_courrier():
-    if not session.get("logged_in") or session.get("role") != "Courrier":
-        return redirect("/login")
-    return render_template("courrier.html") # Assure-toi d'avoir courrier.html
+    if not session.get("logged_in") or session.get("role") != "Courrier": return redirect(url_for('login'))
+    conn = get_db_connection()
+    courriers = conn.execute('SELECT * FROM Dossier').fetchall()
+    conn.close()
+    return render_template('agent_courrier.html', courriers=courriers)
+
+@app.route("/depot")
+def afficher_formulaire():
+    return render_template("depot.html")
 
 @app.route("/agent/callcenter")
 def agent_callcenter():
-    if not session.get("logged_in") or session.get("role") != "CallCenter":
-        return redirect("/login")
-    return render_template("callcenter.html") # Assure-toi d'avoir callcenter.html
+    if not session.get("logged_in") or session.get("role") != "CallCenter": return redirect(url_for('login'))
+    return render_template("callcenter.html")
+
+@app.route('/update_status/<int:id>', methods=['POST'])
+def update_status(id):
+    if not session.get("logged_in"): return redirect(url_for('login'))
+    conn = get_db_connection()
+    conn.execute('UPDATE Dossier SET id_statut_actuel = ? WHERE id_dos = ?', (2, id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('agent_courrier'))
+
+@app.route("/api/ecourrier/dossier/deposer", methods=["POST"])
+def deposer_dossier():
+    matricule = request.form.get("matricule")
+    objet = request.form.get("objet")
+    type_depot = request.form.get("type_depot")
+    fichier = request.files.get('fichier')
+    
+    if fichier and matricule and objet and type_depot:
+        filename = secure_filename(fichier.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        fichier.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+        
+        date_str = datetime.datetime.now().strftime("%d/%m/%Y")
+        conn = get_db_connection()
+        count = conn.execute("SELECT COUNT(*) FROM Dossier").fetchone()[0] + 1
+        num_ticket = f"{date_str}-{count:04d}"
+        
+        # Génération du QR Code
+        qr_file_name = f"{num_ticket.replace('/', '-')}.png"
+        qr_path_full = os.path.join(QR_FOLDER, qr_file_name)
+        qr = qrcode.make(f"http://10.1.63.24:5000/suivi/{num_ticket}")
+        qr.save(qr_path_full)
+        
+        conn.execute(
+            "INSERT INTO Dossier (num_dos, matricule_usager, nom_dos, id_statut_actuel, type_depot, id_user_depose) VALUES (?, ?, ?, ?, ?, ?)",
+            (num_ticket, matricule, objet, 1, type_depot, 1) 
+        )
+        conn.commit()
+        conn.close()
+        
+        # On envoie uniquement le nom du fichier au template
+        return render_template("succes.html", ticket=num_ticket, qr_image=qr_file_name)
+    
+    return "Erreur lors de l'enregistrement.", 400
+
+@app.route("/suivi/<ticket>")
+def suivi_dossier(ticket):
+    return f"Statut pour {ticket} : En cours de traitement."
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=5000, debug=True)

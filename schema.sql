@@ -26,9 +26,8 @@ CREATE TABLE IF NOT EXISTS Dossier (
     num_dos VARCHAR(50) NOT NULL UNIQUE,
     nom_dos VARCHAR(150) NOT NULL,
     description TEXT,
-    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
-    date_modification DATETIME DEFAULT CURRENT_TIMESTAMP,
-    id_user_depose INTEGER NOT NULL,
+    type_depot VARCHAR(50),
+    id_user_depose INTEGER NOT NULL,  -- Cette ligne est cruciale
     id_statut_actuel INTEGER NOT NULL,
     qr_code_path VARCHAR(255),
     FOREIGN KEY (id_user_depose) REFERENCES Utilisateur(id_user),
