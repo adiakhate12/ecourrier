@@ -22,11 +22,10 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 
 def init_db():
-    # Utilise un chemin absolu pour éviter les erreurs de répertoire sur Render
+    # S'assure que le dossier courant est bien utilisé
     db_path = os.path.join(os.getcwd(), DB_NAME)
     conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS Dossier (
+    conn.execute('''CREATE TABLE IF NOT EXISTS Dossier (
                         id_dos INTEGER PRIMARY KEY AUTOINCREMENT,
                         num_dos TEXT,
                         matricule_usager TEXT,
@@ -37,13 +36,13 @@ def init_db():
                     )''')
     conn.commit()
     conn.close()
-    print(f"Base de données vérifiée à : {db_path}")
+    print(f"Base de données initialisée/vérifiée avec succès à : {db_path}")
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_NAME)
+    db_path = os.path.join(os.getcwd(), DB_NAME) # Chemin absolu
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
-
 @app.route("/")
 def index():
     return render_template("index.html")
