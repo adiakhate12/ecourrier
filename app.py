@@ -22,9 +22,11 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 
 def init_db():
-    """Initialise la base de données et les tables nécessaires au démarrage"""
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute('''CREATE TABLE IF NOT EXISTS Dossier (
+    # Utilise un chemin absolu pour éviter les erreurs de répertoire sur Render
+    db_path = os.path.join(os.getcwd(), DB_NAME)
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Dossier (
                         id_dos INTEGER PRIMARY KEY AUTOINCREMENT,
                         num_dos TEXT,
                         matricule_usager TEXT,
@@ -35,10 +37,7 @@ def init_db():
                     )''')
     conn.commit()
     conn.close()
-    print("Base de données initialisée.")
-
-# Initialisation au démarrage
-init_db()
+    print(f"Base de données vérifiée à : {db_path}")
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
